@@ -17,7 +17,7 @@ export const runConversationalAgent = async ({ event, client, logger, targetThre
         The user just said "${userText}". 
         Politely greet them and ask them to upload an image so you can audit its alt-text. 
         
-        CRITICAL INSTRUCTION: As part of your greeting, you MUST briefly inform the user that they can create their own organization policy for accessibility standards (including excluding channels like #memes or #random). Tell them to do this by creating a public channel named "#accessibility-standards", writing their custom policy in a message, and pinning it.
+        CRITICAL INSTRUCTION: Be extremely concise. In 1-2 short sentences, ask them to upload an image for auditing. Then, add a quick final sentence letting them know they can set custom organizational rules (like exempting #memes) by pinning a policy in a public "#accessibility-standards" channel. Do not use filler greetings or long explanations.
         
         Do not answer other questions.
     STRICT GUARDRAIL: Under NO circumstances should you answer general knowledge questions, perform mathematical computations, write code, or act as a general AI assistant. If the user asks you to do anything other than audit an image, you must politely refuse and remind them of your sole purpose.`
@@ -55,7 +55,8 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
     const dataUrl = `data:${file.mimetype};base64,${Buffer.from(arrayBuffer).toString('base64')}`;
 
     const fileInfo = await client.files.info({ file: file.id });
-    const currentAltText = fileInfo.file.alt_txt ? `"${fileInfo.file.alt_txt}"` : "MISSING (Requires new description)";
+    // const currentAltText = fileInfo.file.alt_txt ? `"${fileInfo.file.alt_txt}"` : "MISSING (Requires new description)";
+    const currentAltText = fileInfo.file.alt_txt || "NONE";
 
     // NEW: Fetch the human-readable channel name so the LLM knows where it is
     let channelName = "unknown";
@@ -74,12 +75,12 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
     let systemPrompt = "";
     // We add an explicit instruction to NEVER consider an image "APPROVED" 
     // unless the provided alt-text is already high-quality and present.
-    const strictConstraint = `CRITICAL: You are an auditor, NOT a describer. 
+    const strictConstraint = `CRITICAL: You are an accessibility auditor and describer. 
 1. Compare the provided "Existing alt-text" and the channel context against the Company guidelines.
 2. If the guidelines state the image is EXEMPT based on the channel it was posted in (e.g., a social channel), you MUST output ONLY the word "APPROVED".
 3. If the "Existing alt-text" is already accurate, descriptive, and meets guidelines, you MUST output ONLY the word "APPROVED".
-4. ONLY if the image requires alt-text AND the existing text is "MISSING (Requires new description)" or poor, should you provide a new description.
-5. STRICT FORMATTING: When providing a new description, output ONLY the raw description text. Do NOT include introductory phrases. NEVER output "APPROVED" if the alt-text is missing.`;
+4. If the "Existing alt-text" is "NONE", or if it fails to meet guidelines, you MUST analyze the image and write a brand new, highly descriptive alt-text.
+5. STRICT FORMATTING: When providing a new description, output ONLY the raw description text. Do NOT include introductory phrases, quotes, or labels. NEVER output "APPROVED" if the existing text is "NONE".`;
 
     if (isDM || isManualTag) {
         systemPrompt = `You are a strict accessibility auditor. ${strictConstraint} 
