@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Clean light background -->
+  <rect width="512" height="512" fill="#F8FAFC" rx="110"/>
+  <!-- The Outer Eye Shape -->
+  <path d="M 106 256 Q 256 100 406 256 Q 256 412 106 256" stroke="#3B82F6" stroke-width="36" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- The Iris -->
+  <circle cx="256" cy="256" r="50" fill="#3B82F6" />
+  <!-- The Verification Checkmark -->
+  <path d="M 280 270 L 330 320 L 410 190" stroke="#10B981" stroke-width="40" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
