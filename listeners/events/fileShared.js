@@ -12,6 +12,18 @@ export const fileSharedCallback = async ({ event, client, logger, body, ack, con
     const isMention = event.type === 'app_mention' || (event.text && botUserId && event.text.includes(`<@${botUserId}>`));
 
     let targetFile = event.file || (event.files && event.files[0]);
+    // NEW: Handle unfurled link attachments if no file was directly uploaded
+    if (!targetFile && event.attachments) {
+        const attachmentImage = event.attachments.find(a => a.image_url);
+
+        // Ensure the URL actually ends in a standard image format to avoid SEO web links
+        const isDirectImageLink = attachmentImage && attachmentImage.image_url.match(/\.(jpeg|jpg|gif|png|webp)(\?.*)?$/i);
+
+        if (isDirectImageLink) {
+            targetFile = { is_attachment: true, url: attachmentImage.image_url };
+        }
+    }
+
     let targetThread = event.thread_ts || event.ts;
     const isManualTag = isDM || isMention;
     const isExplicitTrigger = isMention;
@@ -32,6 +44,14 @@ export const fileSharedCallback = async ({ event, client, logger, body, ack, con
                     targetFile = foundFile;
                     logger.info("Found the most recent image in the thread replies.");
                     break; // Stop looking once we find the newest image
+                }
+
+                // NEW: Look for unfurled image link previews in the thread
+                const foundAttachment = msg.attachments?.find(a => a.image_url);
+                if (foundAttachment) {
+                    targetFile = { is_attachment: true, url: foundAttachment.image_url };
+                    logger.info("Found an unfurled image link in the thread replies.");
+                    break;
                 }
             }
         } catch (e) {
@@ -54,7 +74,7 @@ export const fileSharedCallback = async ({ event, client, logger, body, ack, con
     }
 
     // SCENARIO 3: Process the Image
-    if (!targetFile.mimetype || !targetFile.mimetype.startsWith("image/")) return;
+    if (!targetFile.is_attachment && (!targetFile.mimetype || !targetFile.mimetype.startsWith("image/"))) return;
 
     try { await client.reactions.add({ channel: channelId, name: 'robot_face', timestamp: targetThread }); } catch (e) { }
     try { await client.assistant.threads.setStatus({ channel_id: channelId, thread_ts: targetThread, status: "is analyzing..." }); } catch (e) { }

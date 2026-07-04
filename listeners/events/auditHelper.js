@@ -48,18 +48,28 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
     const userText = (event.text || "").replace(/<@[A-Z0-9]+>/g, '').trim();
 
     // 1. Prepare Image
-    const imageResponse = await fetch(file.url_private_download, {
-        headers: { Authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}` }
-    });
-    const arrayBuffer = await imageResponse.arrayBuffer();
-    const dataUrl = `data:${file.mimetype};base64,${Buffer.from(arrayBuffer).toString('base64')}`;
+    // 1. Prepare Image
+    let dataUrl;
+    let currentAltText = "NO_ALT_TEXT_PROVIDED";
 
-    const fileInfo = await client.files.info({ file: file.id });
-    // const currentAltText = fileInfo.file.alt_txt ? `"${fileInfo.file.alt_txt}"` : "MISSING (Requires new description)";
-    // const currentAltText = fileInfo.file.alt_txt || "NONE";
-    const currentAltText = (fileInfo.file.alt_txt && fileInfo.file.alt_txt.trim() !== "")
-        ? fileInfo.file.alt_txt.trim()
-        : "NO_ALT_TEXT_PROVIDED";
+    if (file.is_attachment) {
+        // If it's a pasted URL, we can pass the public link directly to OpenAI
+        dataUrl = file.url;
+        // Slack link previews do not support user-editable alt-text
+        currentAltText = "NO_ALT_TEXT_PROVIDED";
+    } else {
+        // Standard Slack File Upload Logic
+        const imageResponse = await fetch(file.url_private_download, {
+            headers: { Authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}` }
+        });
+        const arrayBuffer = await imageResponse.arrayBuffer();
+        dataUrl = `data:${file.mimetype};base64,${Buffer.from(arrayBuffer).toString('base64')}`;
+
+        const fileInfo = await client.files.info({ file: file.id });
+        currentAltText = (fileInfo.file.alt_txt && fileInfo.file.alt_txt.trim() !== "")
+            ? fileInfo.file.alt_txt.trim()
+            : "NO_ALT_TEXT_PROVIDED";
+    }
 
     // NEW: Fetch the human-readable channel name so the LLM knows where it is
     let channelName = "unknown";
