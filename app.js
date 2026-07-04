@@ -28,6 +28,7 @@ app.use(async ({ event, logger, next }) => {
 registerListeners(app);
 
 (async () => {
-  await app.start();
+  // Bind to Render's dynamic port, or fallback to 3000 locally
+  await app.start(process.env.PORT || 3000);
   console.log('⚡️ Alt-Text Assistant is running in Socket Mode!');
 })();
