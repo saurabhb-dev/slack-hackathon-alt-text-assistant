@@ -77,19 +77,23 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
 
     // We add an explicit instruction to NEVER consider an image "APPROVED" 
     // unless the provided alt-text is already high-quality and present.
-    const strictConstraint = `[INSTRUCTIONS - FOLLOW EXACTLY IN THIS ORDER]
 
-1. STEP 1 (CHECK EXEMPTIONS): Look at the "Current Channel" name at the top. Read the "Company Policy Guidelines". If those guidelines explicitly state that this specific channel name is exempt, excluded, or blacklisted, you MUST stop immediately and output ONLY the word "APPROVED". Do not look at the image.
-2. STEP 2 (EVALUATE EXISTING TEXT): If the channel is not exempt, check the "Existing Alt-Text". If it is NOT "NONE" and provides a reasonably accurate description, output EXACTLY and ONLY the word "APPROVED". Do not over-correct.
-3. STEP 3 (GENERATE NEW TEXT): If the "Existing Alt-Text" is "NONE", OR if it is inaccurate/lazy (e.g., "bad alt text", "image", "test"), you MUST analyze the image and write a new, highly descriptive alt-text.
-4. STRICT FORMATTING: If writing a new description, output ONLY the raw description text. No intros, no quotes. NEVER output "APPROVED" if the text is unhelpful, and NEVER just output the word "NONE".`;
 
     // 2. Branch Prompt Logic based on interaction mode (Conversational vs Passive Monitoring)
     // 1. Declare all factual data clearly at the very top
+    // 1. Declare all factual data clearly at the very top (NOW INCLUDES ID)
     const factsBlock = `[ENVIRONMENT CONTEXT]
-- Current Channel: #${channelName}
+- Current Channel Name: #${channelName}
+- Current Channel ID: ${channelId}
 - Existing Alt-Text: "${currentAltText}"
 - Company Policy Guidelines: "${canvasSnippet}"`;
+
+    const strictConstraint = `[INSTRUCTIONS - FOLLOW EXACTLY IN THIS ORDER]
+
+1. STEP 1 (CHECK EXEMPTIONS): Look at the "Current Channel Name" and "Current Channel ID" at the top. Read the "Company Policy Guidelines". If the guidelines state that this specific channel (either by its name like #random, OR by its Slack ID format like <#${channelId}>) is exempt, excluded, or blacklisted, you MUST stop immediately and output ONLY the word "APPROVED". Do not look at the image.
+2. STEP 2 (EVALUATE EXISTING TEXT): If the channel is not exempt, check the "Existing Alt-Text". If it is NOT "NONE" and provides a reasonably accurate description, output EXACTLY and ONLY the word "APPROVED". Do not over-correct.
+3. STEP 3 (GENERATE NEW TEXT): If the "Existing Alt-Text" is "NONE", OR if it is inaccurate/lazy (e.g., "bad alt text", "image", "test"), you MUST analyze the image and write a new, highly descriptive alt-text.
+4. STRICT FORMATTING: If writing a new description, output ONLY the raw description text. No intros, no quotes. NEVER output "APPROVED" if the text is unhelpful, and NEVER just output the word "NONE".`;
 
     // 2. Build the system prompt with instructions at the bottom
     let systemPrompt = "";
