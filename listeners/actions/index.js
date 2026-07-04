@@ -1,4 +1,3 @@
-import { handleFeedbackButton } from './feedback-buttons.js';
 import { approveAltTextCallback } from './approveAltText.js';
 
 /**
@@ -8,5 +7,4 @@ import { approveAltTextCallback } from './approveAltText.js';
  */
 export function register(app) {
   app.action('approve_alt_text', approveAltTextCallback);
-  app.action('feedback', handleFeedbackButton);
 }
