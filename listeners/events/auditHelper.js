@@ -56,7 +56,10 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
 
     const fileInfo = await client.files.info({ file: file.id });
     // const currentAltText = fileInfo.file.alt_txt ? `"${fileInfo.file.alt_txt}"` : "MISSING (Requires new description)";
-    const currentAltText = fileInfo.file.alt_txt || "NONE";
+    // const currentAltText = fileInfo.file.alt_txt || "NONE";
+    const currentAltText = (fileInfo.file.alt_txt && fileInfo.file.alt_txt.trim() !== "")
+        ? fileInfo.file.alt_txt.trim()
+        : "NONE";
 
     // NEW: Fetch the human-readable channel name so the LLM knows where it is
     let channelName = "unknown";
@@ -75,12 +78,12 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
     let systemPrompt = "";
     // We add an explicit instruction to NEVER consider an image "APPROVED" 
     // unless the provided alt-text is already high-quality and present.
-    const strictConstraint = `CRITICAL: You are an accessibility auditor and describer. 
-1. Compare the provided "Existing alt-text" and the channel context against the Company guidelines.
-2. If the guidelines state the image is EXEMPT based on the channel it was posted in (e.g., a social channel), you MUST output ONLY the word "APPROVED".
-3. If the "Existing alt-text" is already accurate, descriptive, and meets guidelines, you MUST output ONLY the word "APPROVED".
-4. If the "Existing alt-text" is "NONE", or if it fails to meet guidelines, you MUST analyze the image and write a brand new, highly descriptive alt-text.
-5. STRICT FORMATTING: When providing a new description, output ONLY the raw description text. Do NOT include introductory phrases, quotes, or labels. NEVER output "APPROVED" if the existing text is "NONE".`;
+    const strictConstraint = `CRITICAL: You are an accessibility auditor. Your primary goal is to APPROVE user-provided alt-text.
+1. Check the "Existing alt-text".
+2. If the "Existing alt-text" is NOT "NONE", evaluate it. If it provides a reasonably accurate description of the image, you MUST output EXACTLY and ONLY the word "APPROVED". Do not over-correct, be pedantic, or try to improve it.
+3. If the Company guidelines state this channel is exempt, you MUST output ONLY the word "APPROVED".
+4. If and ONLY if the "Existing alt-text" is "NONE", you must analyze the image and write a new, highly descriptive alt-text.
+5. STRICT FORMATTING: If writing a new description, output ONLY the raw text. No intros, no quotes. NEVER output "APPROVED" if the text is "NONE".`;
 
     if (isDM || isManualTag) {
         systemPrompt = `You are a strict accessibility auditor. ${strictConstraint} 
