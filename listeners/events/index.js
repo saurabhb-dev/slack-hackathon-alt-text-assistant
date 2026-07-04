@@ -32,7 +32,7 @@ export function register(app) {
       });
 
       // 4. If the history is totally empty, it's their first time! Send the onboarding.
-      if (history.messages.length === 0) {
+      if (history.messages.length <= 1) {
         logger.info(`Sending onboarding message to new user: ${event.user}`);
 
         await client.chat.postMessage({
