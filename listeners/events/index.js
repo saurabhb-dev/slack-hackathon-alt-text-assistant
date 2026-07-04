@@ -17,27 +17,27 @@ export function register(app) {
   });
 
   // NEW: Proactive Onboarding
+  // NEW: Proactive Onboarding
   app.event('app_home_opened', async ({ event, client, logger }) => {
     try {
-      // 1. We only care if they open the Messages tab
-      if (event.tab !== 'messages') return;
+      logger.info(`app_home_opened triggered! Tab: ${event.tab || 'unknown'}`);
 
-      // 2. Open (or fetch) the DM channel between the bot and the user
+      // Open (or fetch) the DM channel between the bot and the user
       const dm = await client.conversations.open({ users: event.user });
 
-      // 3. Fetch the most recent message in this DM
+      // Fetch the most recent message in this DM
       const history = await client.conversations.history({
         channel: dm.channel.id,
         limit: 1 // We only need one to prove history exists
       });
 
-      // 4. If the history is totally empty, it's their first time! Send the onboarding.
-      if (history.messages.length <= 1) {
+      // If the history is totally empty, it's their first time! Send the onboarding.
+      if (history.messages.length === 0) {
         logger.info(`Sending onboarding message to new user: ${event.user}`);
 
         await client.chat.postMessage({
           channel: dm.channel.id,
-          text: "Welcome to the Alt-Text Assistant!", // Fallback text
+          text: "Welcome to the Alt-Text Assistant!",
           blocks: [
             {
               type: "header",
