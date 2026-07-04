@@ -78,12 +78,11 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
     let systemPrompt = "";
     // We add an explicit instruction to NEVER consider an image "APPROVED" 
     // unless the provided alt-text is already high-quality and present.
-    const strictConstraint = `CRITICAL: You are an accessibility auditor. Your primary goal is to APPROVE user-provided alt-text.
-1. Check the "Existing alt-text".
-2. If the "Existing alt-text" is NOT "NONE", evaluate it. If it provides a reasonably accurate description of the image, you MUST output EXACTLY and ONLY the word "APPROVED". Do not over-correct, be pedantic, or try to improve it.
-3. If the Company guidelines state this channel is exempt, you MUST output ONLY the word "APPROVED".
-4. If and ONLY if the "Existing alt-text" is "NONE", you must analyze the image and write a new, highly descriptive alt-text.
-5. STRICT FORMATTING: If writing a new description, output ONLY the raw text. No intros, no quotes. NEVER output "APPROVED" if the text is "NONE".`;
+    const strictConstraint = `CRITICAL INSTRUCTIONS - FOLLOW EXACTLY IN THIS ORDER:
+1. STEP 1: CHECK EXEMPTIONS. Read the "Context" (which contains the channel name) and the "Company guidelines". If the guidelines state that this specific channel is exempt or excluded, you MUST output EXACTLY and ONLY the word "APPROVED".
+2. STEP 2: EVALUATE EXISTING TEXT. If the channel is NOT exempt, check the "Existing alt-text". If it is NOT "NONE" and provides a reasonably accurate description, output EXACTLY and ONLY the word "APPROVED". Do not over-correct or be pedantic.
+3. STEP 3: GENERATE NEW TEXT. If the "Existing alt-text" is "NONE", OR if the existing text is inaccurate, lazy, or unhelpful (e.g., "bad alt text", "image", "test"), you MUST analyze the image and write a new, highly descriptive alt-text.
+4. STRICT FORMATTING: If generating new alt-text, output ONLY the raw text. No intros, no quotes. NEVER output "APPROVED" if the text is unhelpful, and NEVER just output the word "NONE".`;
 
     if (isDM || isManualTag) {
         systemPrompt = `You are a strict accessibility auditor. ${strictConstraint} 
