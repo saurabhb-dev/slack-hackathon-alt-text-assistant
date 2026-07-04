@@ -39,6 +39,7 @@
         "mpim:read",
         "mpim:write",
         "im:read",
+        "im:write",
         "files:read",
         "files:write",
         "groups:history",
