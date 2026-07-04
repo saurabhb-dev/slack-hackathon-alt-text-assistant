@@ -94,7 +94,7 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
     // 1. Declare all factual data clearly at the very top (NOW INCLUDES ID)
     const factsBlock = `[ENVIRONMENT CONTEXT]
 - Current Channel Name: #${channelName}
-- Current Channel ID: <#${channelId}>
+- Current Channel ID: ${channelId}
 - Existing Alt-Text: "${currentAltText}"
 - Company Policy Guidelines: "${canvasSnippet}"`;
 
@@ -107,10 +107,10 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
 
     const strictConstraint = `[INSTRUCTIONS - FOLLOW EXACTLY IN THIS ORDER]
 
-1. STEP 1 (CHECK EXEMPTIONS): Look at the "Company Policy Guidelines". Check if it explicitly contains the exact "Current Channel Name" or the exact "Current Channel ID" provided in the context above. If it does, you MUST stop immediately and output ONLY the word "APPROVED". Do not evaluate the image.
+1. STEP 1 (CHECK EXEMPTIONS): Look at the "Current Channel Name" and "Current Channel ID" in the context above. Check if EITHER of those exact values are explicitly listed in the "Company Policy Guidelines" as exempt or excluded. If there is an EXACT match, you MUST stop immediately and output ONLY the word "APPROVED". Do not evaluate the image.
 2. STEP 2 (EVALUATE EXISTING TEXT): If the channel is NOT explicitly exempt, check the "Existing Alt-Text".
    - If it is "NO_ALT_TEXT_PROVIDED", proceed directly to Step 3.
-   - If it is a lazy placeholder (e.g., "alt text", "bad", "image", "test") OR fails to accurately describe the image, proceed directly to Step 3.
+   - If it is a lazy placeholder (e.g., "alt text", "bad alt text", "image", "test") OR fails to accurately describe the image, proceed directly to Step 3.
    - If it provides a reasonably accurate description, output EXACTLY and ONLY the word "APPROVED" and STOP. Do not over-correct.
 3. STEP 3 (GENERATE NEW TEXT): You only reach this step if the alt-text is missing, lazy, or inaccurate. You MUST analyze the image and write a new, highly descriptive alt-text.
 4. STRICT FORMATTING: If generating new text, output ONLY the raw description text. No intros, no quotes. NEVER output "APPROVED" in this step, and NEVER output "NO_ALT_TEXT_PROVIDED".`;
