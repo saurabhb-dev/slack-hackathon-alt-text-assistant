@@ -74,25 +74,34 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
 
     logger.info(`🧠 Agent Context: Image was posted in #${channelName}. Evaluating against policy...`);
 
-    // 2. Branch Prompt Logic based on interaction mode (Conversational vs Passive Monitoring)
-    let systemPrompt = "";
+
     // We add an explicit instruction to NEVER consider an image "APPROVED" 
     // unless the provided alt-text is already high-quality and present.
-    const strictConstraint = `CRITICAL INSTRUCTIONS - FOLLOW EXACTLY IN THIS ORDER:
-1. STEP 1: CHECK EXEMPTIONS. Read the "Context" (which contains the channel name) and the "Company guidelines". If the guidelines state that this specific channel is exempt or excluded, you MUST output EXACTLY and ONLY the word "APPROVED".
-2. STEP 2: EVALUATE EXISTING TEXT. If the channel is NOT exempt, check the "Existing alt-text". If it is NOT "NONE" and provides a reasonably accurate description, output EXACTLY and ONLY the word "APPROVED". Do not over-correct or be pedantic.
-3. STEP 3: GENERATE NEW TEXT. If the "Existing alt-text" is "NONE", OR if the existing text is inaccurate, lazy, or unhelpful (e.g., "bad alt text", "image", "test"), you MUST analyze the image and write a new, highly descriptive alt-text.
-4. STRICT FORMATTING: If generating new alt-text, output ONLY the raw text. No intros, no quotes. NEVER output "APPROVED" if the text is unhelpful, and NEVER just output the word "NONE".`;
+    const strictConstraint = `[INSTRUCTIONS - FOLLOW EXACTLY IN THIS ORDER]
 
+1. STEP 1 (CHECK EXEMPTIONS): Look at the "Current Channel" name at the top. Read the "Company Policy Guidelines". If those guidelines explicitly state that this specific channel name is exempt, excluded, or blacklisted, you MUST stop immediately and output ONLY the word "APPROVED". Do not look at the image.
+2. STEP 2 (EVALUATE EXISTING TEXT): If the channel is not exempt, check the "Existing Alt-Text". If it is NOT "NONE" and provides a reasonably accurate description, output EXACTLY and ONLY the word "APPROVED". Do not over-correct.
+3. STEP 3 (GENERATE NEW TEXT): If the "Existing Alt-Text" is "NONE", OR if it is inaccurate/lazy (e.g., "bad alt text", "image", "test"), you MUST analyze the image and write a new, highly descriptive alt-text.
+4. STRICT FORMATTING: If writing a new description, output ONLY the raw description text. No intros, no quotes. NEVER output "APPROVED" if the text is unhelpful, and NEVER just output the word "NONE".`;
+
+    // 2. Branch Prompt Logic based on interaction mode (Conversational vs Passive Monitoring)
+    // 1. Declare all factual data clearly at the very top
+    const factsBlock = `[ENVIRONMENT CONTEXT]
+- Current Channel: #${channelName}
+- Existing Alt-Text: "${currentAltText}"
+- Company Policy Guidelines: "${canvasSnippet}"`;
+
+    // 2. Build the system prompt with instructions at the bottom
+    let systemPrompt = "";
     if (isDM || isManualTag) {
-        systemPrompt = `You are a strict accessibility auditor. ${strictConstraint} 
-        Context: The user posted this in "#${channelName}".
-        Company guidelines: ${canvasSnippet}. Existing alt-text: "${currentAltText}". 
-        The user said: "${userText || "Please check this image."}"`;
+        systemPrompt = `${factsBlock}
+- User Message: "${userText || "Please check this image."}"
+
+${strictConstraint}`;
     } else {
-        systemPrompt = `You are an expert accessibility auditor. ${strictConstraint}
-        Context: The user posted this in "#${channelName}".
-        Company guidelines: ${canvasSnippet}. Existing alt-text: "${currentAltText}".`;
+        systemPrompt = `${factsBlock}
+
+${strictConstraint}`;
     }
 
     // 2. Call OpenAI
