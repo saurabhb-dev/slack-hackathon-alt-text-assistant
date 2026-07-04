@@ -55,7 +55,7 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
     const dataUrl = `data:${file.mimetype};base64,${Buffer.from(arrayBuffer).toString('base64')}`;
 
     const fileInfo = await client.files.info({ file: file.id });
-    const currentAltText = fileInfo.file.alt_txt || "None provided";
+    const currentAltText = fileInfo.file.alt_txt ? `"${fileInfo.file.alt_txt}"` : "MISSING (Requires new description)";
 
     // NEW: Fetch the human-readable channel name so the LLM knows where it is
     let channelName = "unknown";
@@ -78,8 +78,8 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
 1. Compare the provided "Existing alt-text" and the channel context against the Company guidelines.
 2. If the guidelines state the image is EXEMPT based on the channel it was posted in (e.g., a social channel), you MUST output ONLY the word "APPROVED".
 3. If the "Existing alt-text" is already accurate, descriptive, and meets guidelines, you MUST output ONLY the word "APPROVED".
-4. ONLY if the image requires alt-text AND the existing text is missing or poor, should you provide a new description.
-5. STRICT FORMATTING: When providing a new description, output ONLY the raw description text. Do NOT include introductory phrases like "Existing alt-text:" or "Suggested description:".`;
+4. ONLY if the image requires alt-text AND the existing text is "MISSING (Requires new description)" or poor, should you provide a new description.
+5. STRICT FORMATTING: When providing a new description, output ONLY the raw description text. Do NOT include introductory phrases. NEVER output "APPROVED" if the alt-text is missing.`;
 
     if (isDM || isManualTag) {
         systemPrompt = `You are a strict accessibility auditor. ${strictConstraint} 
@@ -107,7 +107,7 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
     logger.info(`LLM Raw Output: "${output}"`);
 
     // STRICT CHECK: Only mark as approved if the output is exactly "APPROVED" (case-insensitive)
-    const isApproved = output.toUpperCase() === "APPROVED";
+    const isApproved = output.replace(/[^a-zA-Z]/g, '').toUpperCase() === "APPROVED";
     const suggestedAltText = isApproved ? "" : output;
 
 
