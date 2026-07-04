@@ -32,7 +32,6 @@
         "assistant:write",
         "channels:history",
         "channels:read",
-        "channels:write",
         "groups:read",
         "groups:write",
         "chat:write",
