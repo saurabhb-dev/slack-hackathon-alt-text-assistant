@@ -59,7 +59,7 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
     // const currentAltText = fileInfo.file.alt_txt || "NONE";
     const currentAltText = (fileInfo.file.alt_txt && fileInfo.file.alt_txt.trim() !== "")
         ? fileInfo.file.alt_txt.trim()
-        : "NONE";
+        : "NO_ALT_TEXT_PROVIDED";
 
     // NEW: Fetch the human-readable channel name so the LLM knows where it is
     let channelName = "unknown";
@@ -90,10 +90,10 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
 
     const strictConstraint = `[INSTRUCTIONS - FOLLOW EXACTLY IN THIS ORDER]
 
-1. STEP 1 (CHECK EXEMPTIONS): Look at the "Current Channel Name" and "Current Channel ID" at the top. Read the "Company Policy Guidelines". If the guidelines state that this specific channel (either by its name like #random, OR by its Slack ID format like <#${channelId}>) is exempt, excluded, or blacklisted, you MUST stop immediately and output ONLY the word "APPROVED". Do not look at the image.
-2. STEP 2 (EVALUATE EXISTING TEXT): If the channel is not exempt, check the "Existing Alt-Text". If it is NOT "NONE" and provides a reasonably accurate description, output EXACTLY and ONLY the word "APPROVED". Do not over-correct.
-3. STEP 3 (GENERATE NEW TEXT): If the "Existing Alt-Text" is "NONE", OR if it is inaccurate/lazy (e.g., "bad alt text", "image", "test"), you MUST analyze the image and write a new, highly descriptive alt-text.
-4. STRICT FORMATTING: If writing a new description, output ONLY the raw description text. No intros, no quotes. NEVER output "APPROVED" if the text is unhelpful, and NEVER just output the word "NONE".`;
+1. STEP 1 (CHECK EXEMPTIONS): Look at the "Current Channel Name" and "Current Channel ID" in the context above. Check if EITHER of those exact values are explicitly listed in the "Company Policy Guidelines" as exempt or excluded. If there is an EXACT match, you MUST stop immediately and output ONLY the word "APPROVED". Do not evaluate the image.
+2. STEP 2 (EVALUATE EXISTING TEXT): If the channel is NOT explicitly exempt, check the "Existing Alt-Text". If it is "NO_ALT_TEXT_PROVIDED", skip this step and proceed to Step 3. If it contains actual text, evaluate it. If it is a reasonably accurate description, output EXACTLY and ONLY the word "APPROVED". Do not over-correct.
+3. STEP 3 (GENERATE NEW TEXT): If the "Existing Alt-Text" is "NO_ALT_TEXT_PROVIDED", OR if it is inaccurate/lazy (e.g., "bad alt text", "image", "test"), you MUST analyze the image and write a new, highly descriptive alt-text.
+4. STRICT FORMATTING: If generating new text, output ONLY the raw description text. No intros, no quotes. NEVER output "APPROVED" in this step, and NEVER output "NO_ALT_TEXT_PROVIDED".`;
 
     // 2. Build the system prompt with instructions at the bottom
     let systemPrompt = "";
