@@ -194,6 +194,9 @@ ${strictConstraint}`;
                 });
                 logger.info("✅ Thread reply sent successfully!");
             } else {
+                // Give the Slack UI 1.5 seconds to finish rendering the image upload
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
                 await client.chat.postEphemeral({
                     channel: channelId,
                     user: user, // If this is undefined, it throws an error
