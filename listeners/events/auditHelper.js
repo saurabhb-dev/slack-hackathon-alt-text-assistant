@@ -159,42 +159,51 @@ ${strictConstraint}`;
 
     // NUDGE LOGIC
     // 5. Handle Non-Approved (Nudge or DM Draft)
-    logger.info("Sending nudge...");
-    if (isDM || isManualTag) {
-        // PUBLIC REPLY IN THREAD
-        await client.chat.postMessage({
-            channel: channelId,
-            thread_ts: targetThread,
-            text: "Accessibility Nudge",
-            blocks: [
-                { type: "header", text: { type: "plain_text", text: "🖼️ Alt-Text Suggestion", emoji: true } },
-                { type: "section", text: { type: "mrkdwn", text: "This image is missing compliant alt-text. Here is a suggested description you can use:" } },
-                { type: "section", text: { type: "mrkdwn", text: `> ${suggestedAltText}` } },
-                { type: "context", elements: [{ type: "mrkdwn", text: "💡 *Tip:* Edit your image upload to include this description." }] }
-            ]
-        });
-    } else {
-        const isThreadReply = !!event.thread_ts;
-        const nudgeBlocks = [
-            { type: "header", text: { type: "plain_text", text: "🖼️ Alt-Text Suggestion", emoji: true } },
-            { type: "section", text: { type: "mrkdwn", text: `Hey <@${user}>, this image needs alt-text to meet our standards! Here is a suggestion:` } },
-            { type: "section", text: { type: "mrkdwn", text: `> ${suggestedAltText}` } },
-            { type: "context", elements: [{ type: "mrkdwn", text: "💡 *Tip:* Edit your image upload to include this description." }] }
-        ];
-        if (isThreadReply) {
+    logger.info(`Attempting to send nudge to User ID: ${user} in Channel: ${channelId}...`);
+
+    try {
+        if (isDM || isManualTag) {
+            // PUBLIC REPLY IN THREAD OR DM
             await client.chat.postMessage({
                 channel: channelId,
                 thread_ts: targetThread,
                 text: "Accessibility Nudge",
-                blocks: nudgeBlocks
+                blocks: [
+                    { type: "header", text: { type: "plain_text", text: "🖼️ Alt-Text Suggestion", emoji: true } },
+                    { type: "section", text: { type: "mrkdwn", text: "This image is missing compliant alt-text. Here is a suggested description you can use:" } },
+                    { type: "section", text: { type: "mrkdwn", text: `> ${suggestedAltText}` } },
+                    { type: "context", elements: [{ type: "mrkdwn", text: "💡 *Tip:* Edit your image upload to include this description." }] }
+                ]
             });
+            logger.info("✅ Standard message sent successfully!");
         } else {
-            await client.chat.postEphemeral({
-                channel: channelId,
-                user: user,
-                text: "Accessibility Nudge",
-                blocks: nudgeBlocks
-            });
+            const isThreadReply = !!event.thread_ts;
+            const nudgeBlocks = [
+                { type: "header", text: { type: "plain_text", text: "🖼️ Alt-Text Suggestion", emoji: true } },
+                { type: "section", text: { type: "mrkdwn", text: `Hey <@${user}>, this image needs alt-text to meet our standards! Here is a suggestion:` } },
+                { type: "section", text: { type: "mrkdwn", text: `> ${suggestedAltText}` } },
+                { type: "context", elements: [{ type: "mrkdwn", text: "💡 *Tip:* Edit your image upload to include this description." }] }
+            ];
+
+            if (isThreadReply) {
+                await client.chat.postMessage({
+                    channel: channelId,
+                    thread_ts: targetThread,
+                    text: "Accessibility Nudge",
+                    blocks: nudgeBlocks
+                });
+                logger.info("✅ Thread reply sent successfully!");
+            } else {
+                await client.chat.postEphemeral({
+                    channel: channelId,
+                    user: user, // If this is undefined, it throws an error
+                    text: "Accessibility Nudge",
+                    blocks: nudgeBlocks
+                });
+                logger.info("✅ Ephemeral message sent successfully!");
+            }
         }
+    } catch (error) {
+        logger.error("🚨 SLACK API ERROR - Failed to send nudge:", error.data || error);
     }
 };
