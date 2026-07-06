@@ -51,6 +51,7 @@
       "request_url": "https://ngrok-free.app/slack/events",
       "bot_events": [
         "app_mention",
+        "app_home_opened",
         "assistant_thread_started",
         "message.channels",
         "message.groups",
