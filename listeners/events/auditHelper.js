@@ -60,6 +60,7 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
     const currentAltText = (fileInfo.file.alt_txt && fileInfo.file.alt_txt.trim() !== "")
         ? fileInfo.file.alt_txt.trim()
         : "NO_ALT_TEXT_PROVIDED";
+    logger.info(`🔍 DEBUG - What Slack thinks the Alt-Text is: "${currentAltText}"`);
 
     // NEW: Fetch the human-readable channel name so the LLM knows where it is
     let channelName = "unknown";
@@ -97,7 +98,7 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
 
     const strictConstraint = `[INSTRUCTIONS - FOLLOW EXACTLY IN THIS ORDER]
 
-1. STEP 1 (CHECK EXEMPTIONS): Look at the "Company Policy Guidelines". Check if it explicitly contains the exact "Current Channel Name" or the exact "Current Channel ID" provided in the context above. If it does, you MUST stop immediately and output ONLY the word "APPROVED". Do not evaluate the image.
+1. STEP 1 (CHECK EXEMPTIONS): Look at the "Company Policy Guidelines". Check if it explicitly lists the current channel as an exemption using its specific ID (<#${channelId}>) or name (#${channelName}). Do not do partial keyword matching (e.g., matching the word 'slack'). If and ONLY if the channel is explicitly named as exempt, output ONLY the word "APPROVED" and STOP.
 2. STEP 2 (EVALUATE EXISTING TEXT): If the channel is NOT explicitly exempt, check the "Existing Alt-Text".
    - If it is "NO_ALT_TEXT_PROVIDED", proceed directly to Step 3.
    - If it is a lazy placeholder (e.g., "alt text", "bad", "image", "test") OR fails to accurately describe the image, proceed directly to Step 3.
