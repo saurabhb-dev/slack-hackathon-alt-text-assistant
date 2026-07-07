@@ -55,8 +55,7 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
     const dataUrl = `data:${file.mimetype};base64,${Buffer.from(arrayBuffer).toString('base64')}`;
 
     const fileInfo = await client.files.info({ file: file.id });
-    // const currentAltText = fileInfo.file.alt_txt ? `"${fileInfo.file.alt_txt}"` : "MISSING (Requires new description)";
-    // const currentAltText = fileInfo.file.alt_txt || "NONE";
+    
     const currentAltText = (fileInfo.file.alt_txt && fileInfo.file.alt_txt.trim() !== "")
         ? fileInfo.file.alt_txt.trim()
         : "None provided.";
@@ -77,25 +76,11 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
     logger.info(`🧠 Agent Context: Image was posted in #${channelName}. Evaluating against policy...`);
 
 
-    // We add an explicit instruction to NEVER consider an image "APPROVED" 
-    // unless the provided alt-text is already high-quality and present.
-
-
-    // 2. Branch Prompt Logic based on interaction mode (Conversational vs Passive Monitoring)
-    // 1. Declare all factual data clearly at the very top
-    // 1. Declare all factual data clearly at the very top (NOW INCLUDES ID)
     const factsBlock = `[ENVIRONMENT CONTEXT]
 - Current Channel Name: #${channelName}
 - Current Channel ID: <#${channelId}>
 - Existing Alt-Text: "${currentAltText}"
 - Company Policy Guidelines: "${canvasSnippet}"`;
-
-    /*  const strictConstraint = `[INSTRUCTIONS - FOLLOW EXACTLY IN THIS ORDER]
- 
- 1. STEP 1 (CHECK EXEMPTIONS): Look at the "Current Channel Name" and "Current Channel ID" in the context above. Check if EITHER of those exact values are explicitly listed in the "Company Policy Guidelines" as exempt or excluded. If there is an EXACT match, you MUST stop immediately and output ONLY the word "APPROVED". Do not evaluate the image.
- 2. STEP 2 (EVALUATE EXISTING TEXT): If the channel is NOT explicitly exempt, check the "Existing Alt-Text". If it is "NO_ALT_TEXT_PROVIDED", skip this step and proceed to Step 3. If it contains actual text, evaluate it. If it is a reasonably accurate description, output EXACTLY and ONLY the word "APPROVED". Do not over-correct.
- 3. STEP 3 (GENERATE NEW TEXT): If the "Existing Alt-Text" is "NO_ALT_TEXT_PROVIDED", OR if it is inaccurate/lazy (e.g., "bad alt text", "image", "test"), you MUST analyze the image and write a new, highly descriptive alt-text.
- 4. STRICT FORMATTING: If generating new text, output ONLY the raw description text. No intros, no quotes. NEVER output "APPROVED" in this step, and NEVER output "NO_ALT_TEXT_PROVIDED".`; */
 
     const strictConstraint = `[YOUR TASK]
 You are an expert accessibility auditor. Evaluate the image and the "Existing Alt-Text" based on the "Company Policy Guidelines".
@@ -122,12 +107,6 @@ You MUST evaluate the attached image, even if it appears to be a simple cartoon,
     }
 
 
-    // --- DEBUG BLOCK 1: THE INPUT ---
-    logger.info("================ DEBUGGING LLM INPUT ================");
-    logger.info(`1. Current Alt-Text evaluated: "${currentAltText}"`);
-    logger.info(`2. Full System Prompt sent to LLM:\n${systemPrompt}`);
-    logger.info("=====================================================");
-
     // 2. Call OpenAI
     const response = await openai.chat.completions.create({
         model: "gpt-4o",
@@ -137,13 +116,7 @@ You MUST evaluate the attached image, even if it appears to be a simple cartoon,
         ]
     });
 
-
     const output = response.choices[0].message.content.trim();
-
-    // --- DEBUG BLOCK 2: THE OUTPUT ---
-    logger.info("================ DEBUGGING LLM OUTPUT ===============");
-    logger.info(`3. LLM Raw Output: "${output}"`);
-    logger.info("=====================================================");
 
     // 🔥 DEBUG: See exactly what the AI is returning
     logger.info(`LLM Raw Output: "${output}"`);

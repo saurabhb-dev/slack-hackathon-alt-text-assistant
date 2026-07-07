@@ -6,12 +6,6 @@ export function register(app) {
     await fileSharedCallback(args);
   });
 
-  // 2. Catch explicit mentions (Just in case you add it to your manifest later)
-  /* app.event('app_mention', async (args) => {
-    await fileSharedCallback(args);
-  }); */
-  // Fixing the bug of duplicate alt text suggestion.
-
   // 3. Catch legacy file_shared events
   app.event('file_shared', async (args) => {
     await fileSharedCallback(args);
