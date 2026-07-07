@@ -119,6 +119,13 @@ ${strictConstraint}`;
 ${strictConstraint}`;
     }
 
+
+    // --- DEBUG BLOCK 1: THE INPUT ---
+    logger.info("================ DEBUGGING LLM INPUT ================");
+    logger.info(`1. Current Alt-Text evaluated: "${currentAltText}"`);
+    logger.info(`2. Full System Prompt sent to LLM:\n${systemPrompt}`);
+    logger.info("=====================================================");
+
     // 2. Call OpenAI
     const response = await openai.chat.completions.create({
         model: "gpt-4o",
@@ -127,6 +134,11 @@ ${strictConstraint}`;
             { role: "user", content: [{ type: "text", text: "Evaluate." }, { type: "image_url", image_url: { url: dataUrl } }] }
         ]
     });
+
+    // --- DEBUG BLOCK 2: THE OUTPUT ---
+    logger.info("================ DEBUGGING LLM OUTPUT ===============");
+    logger.info(`3. LLM Raw Output: "${output}"`);
+    logger.info("=====================================================");
 
     const output = response.choices[0].message.content.trim();
 
