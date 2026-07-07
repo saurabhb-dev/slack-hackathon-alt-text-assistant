@@ -96,15 +96,18 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
  3. STEP 3 (GENERATE NEW TEXT): If the "Existing Alt-Text" is "NO_ALT_TEXT_PROVIDED", OR if it is inaccurate/lazy (e.g., "bad alt text", "image", "test"), you MUST analyze the image and write a new, highly descriptive alt-text.
  4. STRICT FORMATTING: If generating new text, output ONLY the raw description text. No intros, no quotes. NEVER output "APPROVED" in this step, and NEVER output "NO_ALT_TEXT_PROVIDED".`; */
 
-    const strictConstraint = `[INSTRUCTIONS - FOLLOW EXACTLY IN THIS ORDER]
+    const strictConstraint = `[YOUR TASK]
+You are an expert accessibility auditor. Evaluate the image and the "Existing Alt-Text" based on the "Company Policy Guidelines".
 
-1. STEP 1 (CHECK EXEMPTIONS): Look at the "Company Policy Guidelines". Check if it explicitly contains the exact "Current Channel Name" or the exact "Current Channel ID" provided in the context above. If it does, you MUST stop immediately and output ONLY the word "APPROVED". Do not evaluate the image.
-2. STEP 2 (EVALUATE EXISTING TEXT): If the channel is NOT explicitly exempt, evaluate the "Existing Alt-Text".
-   - If it is "MISSING", skip this step and proceed immediately to Step 3.
-   - If it is a lazy placeholder (e.g., "alt text", "bad", "image", "test"), OR if it is overly brief, vague, or lacks the detailed context required by the "Company Policy Guidelines", proceed directly to Step 3. 
-   - If and ONLY if the existing text provides a highly detailed, comprehensive description that fully meets the policy standards, output EXACTLY and ONLY the word "APPROVED" and STOP. Do not accept low-effort descriptions.
-3. STEP 3 (GENERATE NEW DESCRIPTION): If you reached this step, you must look at the attached image and write a completely new, highly descriptive alternative text based on the "Company Policy Guidelines". 
-4. STRICT FORMATTING: Output ONLY your generated description text. Do not include intro phrases, quotes, or any labels. Never output the word "APPROVED" in this step.`;
+[DECISION LOGIC]
+1. EXEMPT CHANNELS: If the "Company Policy Guidelines" explicitly list the "Current Channel Name" or "Current Channel ID" as exempt, you must output ONLY the word "APPROVED".
+2. MISSING TEXT: If the "Existing Alt-Text" is exactly the word "MISSING", you must look at the image and output a brand new, highly detailed alt-text description. DO NOT output "APPROVED".
+3. BAD TEXT: If the "Existing Alt-Text" is brief, vague (e.g., "yellow robot", "chart", "image", "test"), or fails the policy, you must look at the image and output a brand new, highly detailed alt-text description. DO NOT output "APPROVED".
+4. GOOD TEXT: If and ONLY if the "Existing Alt-Text" is already highly descriptive and fully meets the policy, output ONLY the word "APPROVED".
+
+[STRICT OUTPUT FORMAT]
+- If the text is good or the channel is exempt, output exactly: APPROVED
+- If generating a new description, output ONLY the new description text. Do not include quotes, intro phrases, or labels.`;
 
 
     // 2. Build the system prompt with instructions at the bottom
