@@ -55,7 +55,7 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
     const dataUrl = `data:${file.mimetype};base64,${Buffer.from(arrayBuffer).toString('base64')}`;
 
     const fileInfo = await client.files.info({ file: file.id });
-    
+
     const currentAltText = (fileInfo.file.alt_txt && fileInfo.file.alt_txt.trim() !== "")
         ? fileInfo.file.alt_txt.trim()
         : "None provided.";
@@ -155,11 +155,12 @@ You MUST evaluate the attached image, even if it appears to be a simple cartoon,
             await client.chat.postMessage({
                 channel: channelId,
                 thread_ts: targetThread,
-                text: "Accessibility Nudge",
+                text: `Suggested Alt-Text: ${suggestedAltText}`,
                 blocks: [
                     { type: "header", text: { type: "plain_text", text: "🖼️ Alt-Text Suggestion", emoji: true } },
                     { type: "section", text: { type: "mrkdwn", text: "This image is missing compliant alt-text. Here is a suggested description you can use:" } },
-                    { type: "section", text: { type: "mrkdwn", text: `> ${suggestedAltText}` } },
+                    // 2. Wrap the suggestion in triple backticks instead of a blockquote:
+                    { type: "section", text: { type: "mrkdwn", text: `\`\`\`${suggestedAltText}\`\`\`` } },
                     { type: "context", elements: [{ type: "mrkdwn", text: "💡 *Tip:* Edit your image upload to include this description." }] }
                 ]
             });
@@ -169,7 +170,8 @@ You MUST evaluate the attached image, even if it appears to be a simple cartoon,
             const nudgeBlocks = [
                 { type: "header", text: { type: "plain_text", text: "🖼️ Alt-Text Suggestion", emoji: true } },
                 { type: "section", text: { type: "mrkdwn", text: `Hey <@${user}>, this image needs alt-text to meet our standards! Here is a suggestion:` } },
-                { type: "section", text: { type: "mrkdwn", text: `> ${suggestedAltText}` } },
+                // Update to triple backticks:
+                { type: "section", text: { type: "mrkdwn", text: `\`\`\`${suggestedAltText}\`\`\`` } },
                 { type: "context", elements: [{ type: "mrkdwn", text: "💡 *Tip:* Edit your image upload to include this description." }] }
             ];
 
@@ -177,7 +179,8 @@ You MUST evaluate the attached image, even if it appears to be a simple cartoon,
                 await client.chat.postMessage({
                     channel: channelId,
                     thread_ts: targetThread,
-                    text: "Accessibility Nudge",
+                    // Update fallback text:
+                    text: `Suggested Alt-Text: ${suggestedAltText}`,
                     blocks: nudgeBlocks
                 });
                 logger.info("✅ Thread reply sent successfully!");
@@ -188,7 +191,8 @@ You MUST evaluate the attached image, even if it appears to be a simple cartoon,
                 await client.chat.postEphemeral({
                     channel: channelId,
                     user: user, // If this is undefined, it throws an error
-                    text: "Accessibility Nudge",
+                    // Update fallback text:
+                    text: `Suggested Alt-Text: ${suggestedAltText}`,
                     blocks: nudgeBlocks
                 });
                 logger.info("✅ Ephemeral message sent successfully!");
