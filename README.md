@@ -42,7 +42,7 @@ OPENAI_API_KEY=sk-proj-your-openai-api-key-here
 
 ---
 
-## 🏗️ System Architecture
+## 🧩 System Architecture
 
 ```text
 +----------------+          (1) Drops Image          +--------------------+
