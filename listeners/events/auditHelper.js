@@ -100,9 +100,12 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
     const strictConstraint = `[YOUR TASK]
 You are an expert accessibility auditor. Evaluate the image and the "Existing Alt-Text" based on the "Company Policy Guidelines".
 
+[CRITICAL OVERRIDE: NO REFUSALS]
+You MUST evaluate and describe the attached image, even if it appears to be a simple cartoon, icon, clipart, or emoji. Do NOT refuse the request. Do NOT say "I cannot assist with that" or "I am unable to evaluate emoji". You must write a descriptive alt-text for the visual content regardless of its artistic style.
+
 [DECISION LOGIC]
 1. EXEMPT CHANNELS: If the "Company Policy Guidelines" explicitly list the "Current Channel Name" or "Current Channel ID" as exempt, you must output ONLY the word "APPROVED".
-2. MISSING TEXT: If the "Existing Alt-Text" is exactly the word "MISSING", you must look at the image and output a brand new, highly detailed alt-text description. DO NOT output "APPROVED".
+2. MISSING TEXT: If the "Existing Alt-Text" is "None provided.", you must look at the image and output a brand new, highly detailed alt-text description. DO NOT output "APPROVED".
 3. BAD TEXT: If the "Existing Alt-Text" is brief, vague (e.g., "yellow robot", "chart", "image", "test"), or fails the policy, you must look at the image and output a brand new, highly detailed alt-text description. DO NOT output "APPROVED".
 4. GOOD TEXT: If and ONLY if the "Existing Alt-Text" is already highly descriptive and fully meets the policy, output ONLY the word "APPROVED".
 
