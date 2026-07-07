@@ -4,6 +4,11 @@ Alt-Text Assistant is an intelligent, context-aware Slack agent designed to ensu
 
 ---
 
+## 📺 Demo Video
+See the Alt-Text Assistant in action: **[Watch the Demo on YouTube](https://www.youtube.com/watch?v=LX5VN2jDPJo)**
+
+---
+
 ## 💡 Inspiration
 Digital accessibility is a fundamental human right, but in fast-paced corporate communication, it is often treated as an afterthought. While Slack provides a native setting to remind or force users to add alt-text to their image uploads, it suffers from a massive compliance gap: **it cannot evaluate the semantic quality of the text.** 
 
