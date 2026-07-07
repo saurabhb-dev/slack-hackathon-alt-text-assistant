@@ -59,7 +59,8 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
     // const currentAltText = fileInfo.file.alt_txt || "NONE";
     const currentAltText = (fileInfo.file.alt_txt && fileInfo.file.alt_txt.trim() !== "")
         ? fileInfo.file.alt_txt.trim()
-        : "MISSING";
+        : "None provided.";
+
     logger.info(`🔍 DEBUG - What Slack thinks the Alt-Text is: "${currentAltText}"`);
 
     // NEW: Fetch the human-readable channel name so the LLM knows where it is
@@ -113,14 +114,10 @@ You are an expert accessibility auditor. Evaluate the image and the "Existing Al
     // 2. Build the system prompt with instructions at the bottom
     let systemPrompt = "";
     if (isDM || isManualTag) {
-        systemPrompt = `${factsBlock}
-- User Message: "${userText || "Please check this image."}"
-
-${strictConstraint}`;
+        systemPrompt = `${factsBlock}\n- User Message: "${userText || "Please check this image."}"\n\n${strictConstraint}`;
     } else {
-        systemPrompt = `${factsBlock}
-
-${strictConstraint}`;
+        // 🔥 FIX: Give the LLM a clear action anchor for proactive audits
+        systemPrompt = `${factsBlock}\n- System Task: "Please evaluate this image and existing alt-text."\n\n${strictConstraint}`;
     }
 
 
