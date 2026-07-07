@@ -135,12 +135,13 @@ ${strictConstraint}`;
         ]
     });
 
+    
+    const output = response.choices[0].message.content.trim();
+    
     // --- DEBUG BLOCK 2: THE OUTPUT ---
     logger.info("================ DEBUGGING LLM OUTPUT ===============");
     logger.info(`3. LLM Raw Output: "${output}"`);
     logger.info("=====================================================");
-
-    const output = response.choices[0].message.content.trim();
 
     // 🔥 DEBUG: See exactly what the AI is returning
     logger.info(`LLM Raw Output: "${output}"`);
