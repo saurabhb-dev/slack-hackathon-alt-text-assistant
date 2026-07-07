@@ -113,7 +113,6 @@ You MUST evaluate and describe the attached image, even if it appears to be a si
 - If the text is good or the channel is exempt, output exactly: APPROVED
 - If generating a new description, output ONLY the new description text. Do not include quotes, intro phrases, or labels.`;
 
-
     // 2. Build the system prompt with instructions at the bottom
     let systemPrompt = "";
     if (isDM || isManualTag) {
