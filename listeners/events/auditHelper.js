@@ -105,8 +105,8 @@ You MUST evaluate the attached image, even if it appears to be a simple cartoon,
 
 [DECISION LOGIC - READ CAREFULLY]
 1. EXEMPT CHANNELS: If the "Company Policy Guidelines" explicitly list the "Current Channel Name" or "Current Channel ID" as exempt, output exactly: APPROVED
-2. GOOD TEXT (PASS): If the "Existing Alt-Text" is already a highly detailed, accurate description of the image, you MUST output exactly: APPROVED
-3. MISSING OR BAD TEXT (FAIL): If the "Existing Alt-Text" is "None provided.", OR if it is vague (e.g., "image", "chart"), OR if it fails the policy, you must output a completely new, highly detailed alt-text description.
+2. GOOD TEXT (PASS): If the "Existing Alt-Text" accurately describes the core visual elements and meets the basic policy, you MUST output exactly: APPROVED. Do NOT reject or rewrite the text just to make minor vocabulary changes, stylistic tweaks, or to add trivial details (like background color). Do not be overly pedantic.
+3. MISSING OR BAD TEXT (FAIL): If the "Existing Alt-Text" is "None provided.", OR if it is lazy/vague (e.g., "image", "logo"), OR if it clearly fails the policy, you must output a completely new, highly detailed alt-text description.
 
 [STRICT OUTPUT FORMAT]
 - If the image passes (Rule 1 or 2), output ONLY the word: APPROVED
