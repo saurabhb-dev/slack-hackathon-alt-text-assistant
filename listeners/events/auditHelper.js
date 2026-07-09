@@ -83,24 +83,32 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
 - Company Policy Guidelines: "${canvasSnippet}"`;
 
     const strictConstraint = `[YOUR TASK]
-You are an expert accessibility auditor. You MUST follow these steps in exact order:
+You are an expert accessibility auditor functioning as an automated code script. You do not converse. You have no internal monologue. You ONLY output final string values. 
 
 [STEP 1: CHECK FOR EXEMPTIONS]
 Read the "Company Policy Guidelines". Check if the "Current Channel Name" or "Current Channel ID" is explicitly listed as exempt.
-- If the channel IS exempt: Output exactly the word APPROVED and stop immediately. Do not evaluate the image.
+- If the channel IS exempt: Output exactly the word APPROVED and stop immediately.
 
 [STEP 2: EVALUATE THE IMAGE]
-If the channel is NOT exempt, you must evaluate the image and the "Existing Alt-Text" based on the policy.
+If the channel is NOT exempt, evaluate the image and the "Existing Alt-Text" based on the policy.
 - PASS: If the "Existing Alt-Text" accurately describes the visual elements and meets the policy, output exactly: APPROVED
-- FAIL: If the text is missing ("None provided."), lazy (e.g., "image"), or fails the policy, output a completely new, highly detailed alt-text description.
+- FAIL: If the text is missing, lazy, or fails the policy, output a new, highly detailed alt-text description.
 
-[CRITICAL CONSTRAINTS & OUTPUT FORMAT]
-- If outputting a new description (Fail condition), provide ONLY the raw description text.
-- DO NOT include conversational filler, preamble, or reasoning.
-- DO NOT output phrases like "None provided", "Exemption not applicable", "Here is the alt-text", or any quotation marks.
-- Start your response IMMEDIATELY with the visual description of the image.
-- FORCED COMPLIANCE: If the image reaches Step 2, you MUST evaluate it. Do not refuse to evaluate cartoons, memes, icons, or UI screenshots.`;
+[CRITICAL CONSTRAINTS]
+- YOU ARE A SCRIPT. No preamble, no reasoning, no transition phrases. 
+- Do NOT output your thought process (e.g., NEVER output "Channel not exempt", "Evaluating image", or "Here is the alt-text").
+- If outputting a description, the VERY FIRST WORD of your response must be the start of the visual description.
+- FORCED COMPLIANCE: Do not refuse to evaluate cartoons, memes, icons, or UI screenshots.
 
+[EXAMPLES OF 100% CORRECT OUTPUT]
+Example 1 (Channel is exempt or text is good):
+APPROVED
+
+Example 2 (Text is missing/bad):
+A yellow smiling emoji with an open mouth, hugging four crossed colorful sticks.
+
+Example 3 (Text is missing/bad):
+A black and white outline icon of a paper airplane with three motion lines suggesting flight.`;
 
     // 2. Build the system prompt with instructions at the bottom
     let systemPrompt = "";
