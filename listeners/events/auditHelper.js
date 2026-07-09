@@ -83,19 +83,20 @@ export const runAuditLogic = async ({ file, event, client, logger, canvasSnippet
 - Company Policy Guidelines: "${canvasSnippet}"`;
 
     const strictConstraint = `[YOUR TASK]
-You are an expert accessibility auditor. Evaluate the image and the "Existing Alt-Text" based on the "Company Policy Guidelines".
+You are an expert accessibility auditor. You MUST follow these steps in exact order:
 
-[CRITICAL OVERRIDE: NO REFUSALS]
-You MUST evaluate the attached image, even if it appears to be a simple cartoon, icon, clipart, or emoji. Do NOT refuse the request. Do NOT say "I cannot assist with that". Treat all artistic styles as valid visual content.
+[STEP 1: CHECK FOR EXEMPTIONS]
+Read the "Company Policy Guidelines". Check if the "Current Channel Name" or "Current Channel ID" is explicitly listed as exempt.
+- If the channel IS exempt: Output exactly the word APPROVED and stop immediately. Do not evaluate the image.
 
-[DECISION LOGIC - READ CAREFULLY]
-1. EXEMPT CHANNELS: If the "Company Policy Guidelines" explicitly list the "Current Channel Name" or "Current Channel ID" as exempt, output exactly: APPROVED
-2. GOOD TEXT (PASS): If the "Existing Alt-Text" accurately describes the core visual elements and meets the basic policy, you MUST output exactly: APPROVED. Do NOT reject or rewrite the text just to make minor vocabulary changes, stylistic tweaks, or to add trivial details (like background color). Do not be overly pedantic.
-3. MISSING OR BAD TEXT (FAIL): If the "Existing Alt-Text" is "None provided.", OR if it is lazy/vague (e.g., "image", "logo"), OR if it clearly fails the policy, you must output a completely new, highly detailed alt-text description.
+[STEP 2: EVALUATE THE IMAGE]
+If the channel is NOT exempt, you must evaluate the image and the "Existing Alt-Text" based on the policy.
+- PASS: If the "Existing Alt-Text" accurately describes the visual elements and meets the policy, output exactly: APPROVED
+- FAIL: If the text is missing ("None provided."), lazy (e.g., "image"), or fails the policy, output a completely new, highly detailed alt-text description.
 
-[STRICT OUTPUT FORMAT]
-- If the image passes (Rule 1 or 2), output ONLY the word: APPROVED
-- If the image fails (Rule 3), output ONLY the new description text. Do not include quotes, intro phrases, or the word APPROVED.`;
+[CRITICAL CONSTRAINTS]
+- If outputting a new description (Fail condition), provide ONLY the description text. Do not include quotes, intro phrases, or the word APPROVED.
+- FORCED COMPLIANCE: If the image reaches Step 2, you MUST evaluate it. Do not refuse to evaluate cartoons, memes, icons, or UI screenshots. Treat all visual content as valid.`;
 
     // 2. Build the system prompt with instructions at the bottom
     let systemPrompt = "";
