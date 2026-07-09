@@ -94,9 +94,13 @@ If the channel is NOT exempt, you must evaluate the image and the "Existing Alt-
 - PASS: If the "Existing Alt-Text" accurately describes the visual elements and meets the policy, output exactly: APPROVED
 - FAIL: If the text is missing ("None provided."), lazy (e.g., "image"), or fails the policy, output a completely new, highly detailed alt-text description.
 
-[CRITICAL CONSTRAINTS]
-- If outputting a new description (Fail condition), provide ONLY the description text. Do not include quotes, intro phrases, or the word APPROVED.
-- FORCED COMPLIANCE: If the image reaches Step 2, you MUST evaluate it. Do not refuse to evaluate cartoons, memes, icons, or UI screenshots. Treat all visual content as valid.`;
+[CRITICAL CONSTRAINTS & OUTPUT FORMAT]
+- If outputting a new description (Fail condition), provide ONLY the raw description text.
+- DO NOT include conversational filler, preamble, or reasoning.
+- DO NOT output phrases like "None provided", "Exemption not applicable", "Here is the alt-text", or any quotation marks.
+- Start your response IMMEDIATELY with the visual description of the image.
+- FORCED COMPLIANCE: If the image reaches Step 2, you MUST evaluate it. Do not refuse to evaluate cartoons, memes, icons, or UI screenshots.`;
+
 
     // 2. Build the system prompt with instructions at the bottom
     let systemPrompt = "";
